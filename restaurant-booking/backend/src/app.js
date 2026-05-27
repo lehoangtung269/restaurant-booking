@@ -19,6 +19,8 @@ const tableRoutes = require('./routes/table.routes');
 app.use('/api/tables', tableRoutes);
 const menuRoutes = require('./routes/menu.routes');
 app.use('/api/menu', menuRoutes);
+const reservationRoutes = require('./routes/reservation.routes');
+app.use('/api/reservations', reservationRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
