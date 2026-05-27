@@ -15,6 +15,10 @@ app.use(express.json());
 // Routes sau
 const authRoutes = require('./routes/auth.routes');
 app.use('/api/auth', authRoutes);
+const tableRoutes = require('./routes/table.routes');
+app.use('/api/tables', tableRoutes);
+const menuRoutes = require('./routes/menu.routes');
+app.use('/api/menu', menuRoutes);
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
