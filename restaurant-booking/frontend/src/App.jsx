@@ -1,7 +1,7 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
 import { PublicFooter } from './components/PublicFooter';
 import { PublicHeader } from './components/PublicHeader';
-import { LoginPage, RegisterPage } from './pages/AuthPages';
+import { LoginPage, RegisterPage, StaffLoginPage } from './pages/AuthPages';
 import { ComingSoonPage } from './pages/ComingSoonPage';
 import { HomePage } from './pages/HomePage';
 import { MenuPage } from './pages/MenuPage';
@@ -45,6 +45,7 @@ export default function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/staff/login" element={<StaffLoginPage />} />
       </Route>
 
       <Route element={<PublicLayout />}>

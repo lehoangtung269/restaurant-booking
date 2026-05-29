@@ -364,8 +364,8 @@ export function StaffPage() {
           <p className="staff-eyebrow">Staff Console</p>
           <h1>Dang nhap de tiep tuc</h1>
           <p>Phan nhan vien can tai khoan STAFF hoac MANAGER.</p>
-          <Link className="staff-primary-link" to="/login">
-            Login
+          <Link className="staff-primary-link" to="/staff/login">
+            Staff login
           </Link>
         </div>
       </main>

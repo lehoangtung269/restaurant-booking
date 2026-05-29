@@ -1902,6 +1902,137 @@ blockquote cite {
   margin-top: 0;
 }
 
+.staff-login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(196, 154, 88, 0.16), transparent 30%),
+    radial-gradient(circle at 86% 78%, rgba(110, 147, 194, 0.12), transparent 34%),
+    var(--ink);
+}
+
+.staff-login-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  width: min(980px, 100%);
+  min-height: 560px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(242, 231, 210, 0.08), transparent 45%),
+    rgba(17, 16, 13, 0.92);
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+}
+
+.staff-login-copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 42px;
+  background:
+    linear-gradient(180deg, transparent, rgba(9, 8, 6, 0.62)),
+    linear-gradient(135deg, rgba(196, 154, 88, 0.12), transparent 42%);
+}
+
+.staff-login-copy::before {
+  content: '';
+  position: absolute;
+  inset: 34px;
+  border: 1px solid rgba(196, 154, 88, 0.16);
+  border-radius: 24px;
+  pointer-events: none;
+}
+
+.staff-login-brand {
+  position: absolute;
+  top: 36px;
+  left: 42px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+}
+
+.staff-login-copy h1 {
+  position: relative;
+  max-width: 520px;
+  font-size: 64px;
+  line-height: 0.95;
+}
+
+.staff-login-copy p {
+  position: relative;
+  max-width: 500px;
+  color: var(--muted);
+}
+
+.staff-login-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 42px;
+  border-left: 1px solid var(--line);
+  background: rgba(9, 8, 6, 0.26);
+}
+
+.staff-login-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.staff-login-form span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.staff-login-form input {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  outline: 0;
+  background: rgba(242, 231, 210, 0.05);
+  color: var(--cream);
+  padding: 0 15px;
+}
+
+.staff-login-form input:focus {
+  border-color: rgba(196, 154, 88, 0.56);
+}
+
+.staff-login-form > button {
+  min-height: 52px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #15100a;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.staff-login-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.staff-login-links a:hover {
+  color: var(--gold);
+}
+
 @keyframes heroBreath {
   from {
     transform: scale(1.08) translate3d(-1.5%, -1%, 0);
@@ -2039,6 +2170,19 @@ blockquote cite {
   .staff-detail {
     position: static;
   }
+
+  .staff-login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-login-form {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .staff-login-copy {
+    min-height: 320px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -2155,5 +2299,32 @@ blockquote cite {
   .staff-locked-panel {
     border-radius: 20px;
     padding: 16px;
+  }
+
+  .staff-login-page {
+    padding: 14px;
+  }
+
+  .staff-login-card {
+    border-radius: 22px;
+  }
+
+  .staff-login-copy,
+  .staff-login-form {
+    padding: 28px;
+  }
+
+  .staff-login-brand {
+    top: 26px;
+    left: 28px;
+  }
+
+  .staff-login-copy h1 {
+    font-size: 46px;
+  }
+
+  .staff-login-links {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
