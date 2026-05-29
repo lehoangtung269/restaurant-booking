@@ -1,7 +1,9 @@
 const Reservation = require('../models/Reservation');
 const Table = require('../models/Table');
+const User = require('../models/User');
 const availabilityService = require('../services/availabilityService');
 const { notifyBookingConfirmed, notifyBookingCancelled } = require('../services/notificationService');
+const { sendBookingConfirmation, sendBookingCancellation } = require('../services/emailService');
 
 // Các chuyển trạng thái hợp lệ (chỉ STAFF/MANAGER)
 const VALID_TRANSITIONS = {
@@ -39,13 +41,22 @@ const create = async (req, res) => {
         });
 
         res.status(201).json(reservation);
+
+        // ✅ Gửi email + notification sau khi response đã trả về (fire-and-forget)
+        const user = await User.findById(req.user.id);
+        await sendBookingConfirmation(
+            user.email,
+            user.full_name,
+            reservation.reservation_date,
+            reservation.start_time,
+            table.table_number
+        );
+        await notifyBookingConfirmed(req.user.id, reservation.reservation_date, reservation.start_time);
+
     } catch (err) {
         const status = err.statusCode || 500;
         res.status(status).json({ message: err.message });
     }
-    // ✅ Gửi notification cho user sau khi tạo thành công
-    await notifyBookingConfirmed(req.user.id, data.reservation_date, data.start_time);
-
 };
 
 // ─── GET MY RESERVATIONS ──────────────────────────────────────────────────────
@@ -134,7 +145,6 @@ const cancel = async (req, res) => {
         }
 
         // Kiểm tra deadline: phải huỷ trước start_time ít nhất 2 tiếng
-        // reservation_date: "YYYY-MM-DD", start_time: "HH:MM:SS"
         const startDateTime = new Date(`${reservation.reservation_date}T${reservation.start_time}`);
         const deadline = new Date(startDateTime.getTime() - 2 * 60 * 60 * 1000); // -2h
         if (new Date() >= deadline) {
@@ -150,11 +160,20 @@ const cancel = async (req, res) => {
         });
 
         res.json({ message: 'Reservation cancelled successfully', reservation: updated });
+
+        // ✅ Gửi email + notification sau khi response đã trả về (fire-and-forget)
+        const user = await User.findById(reservation.user_id);
+        await sendBookingCancellation(
+            user.email,
+            user.full_name,
+            reservation.reservation_date,
+            reservation.start_time
+        );
+        await notifyBookingCancelled(reservation.user_id, reservation.reservation_date, reservation.start_time);
+
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
-    // ✅ Gửi notification cho user sau khi hủy thành công
-    await notifyBookingCancelled(reservation.user_id, reservation.reservation_date, reservation.start_time);
 };
 
 module.exports = { create, getMyReservations, getAll, getById, updateStatus, cancel };

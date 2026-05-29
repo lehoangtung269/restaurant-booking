@@ -2,6 +2,8 @@ const app = require('./app');
 const db = require('./config/database');
 const cron = require('node-cron');
 const Reservation = require('./models/Reservation');
+const User = require('./models/User');
+const { sendBookingReminder } = require('./services/emailService');
 
 const PORT = process.env.PORT || 5000;
 
@@ -29,6 +31,48 @@ async function startServer() {
                 console.log(`⏰ [Cron] Marked ${ids.length} reservation(s) as NO_SHOW: [${ids.join(', ')}]`);
             } catch (err) {
                 console.error('❌ [Cron] No-show job failed:', err.message);
+            }
+        });
+
+        // Cron job: gửi email nhắc nhở trước 2 tiếng — chạy mỗi 5 phút
+        cron.schedule('*/5 * * * *', async () => {
+            try {
+                const now = new Date();
+                const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+                const windowEnd = new Date(twoHoursLater.getTime() + 5 * 60 * 1000); // +5 phút buffer
+
+                const reminders = await db('reservations')
+                    .join('users', 'reservations.user_id', 'users.id')
+                    .join('restaurant_tables', 'reservations.table_id', 'restaurant_tables.id')
+                    .where('reservations.status', 'CONFIRMED')
+                    .whereRaw(
+                        `(reservation_date::text || ' ' || start_time::text)::timestamp BETWEEN ? AND ?`,
+                        [twoHoursLater.toISOString(), windowEnd.toISOString()]
+                    )
+                    .select(
+                        'reservations.id',
+                        'reservations.reservation_date',
+                        'reservations.start_time',
+                        'users.email',
+                        'users.full_name',
+                        'restaurant_tables.table_number'
+                    );
+
+                for (const r of reminders) {
+                    await sendBookingReminder(
+                        r.email,
+                        r.full_name,
+                        r.reservation_date,
+                        r.start_time,
+                        r.table_number
+                    );
+                }
+
+                if (reminders.length > 0) {
+                    console.log(`📧 [Cron] Sent ${reminders.length} reminder email(s)`);
+                }
+            } catch (err) {
+                console.error('❌ [Cron] Reminder job failed:', err.message);
             }
         });
     } catch (error) {
