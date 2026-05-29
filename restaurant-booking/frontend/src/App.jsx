@@ -6,6 +6,7 @@ import { ComingSoonPage } from './pages/ComingSoonPage';
 import { HomePage } from './pages/HomePage';
 import { MenuPage } from './pages/MenuPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { StaffPage } from './pages/StaffPage';
 
 function PublicLayout() {
   return (
@@ -24,6 +25,8 @@ function AuthLayout() {
 export default function App() {
   return (
     <Routes>
+      <Route path="/staff" element={<StaffPage />} />
+
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="/menu" element={<MenuPage />} />
@@ -34,15 +37,6 @@ export default function App() {
             <ComingSoonPage
               title="Booking flow"
               text="Phan tiep theo se dung /api/tables/availability de chon ban va tao reservation."
-            />
-          }
-        />
-        <Route
-          path="/staff"
-          element={
-            <ComingSoonPage
-              title="Staff console"
-              text="Phan staff console se duoc lam rieng sau khi customer booking flow on dinh."
             />
           }
         />
