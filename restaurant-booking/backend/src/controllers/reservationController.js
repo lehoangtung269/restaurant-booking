@@ -1,6 +1,7 @@
 const Reservation = require('../models/Reservation');
 const Table = require('../models/Table');
 const availabilityService = require('../services/availabilityService');
+const { notifyBookingConfirmed, notifyBookingCancelled } = require('../services/notificationService');
 
 // Các chuyển trạng thái hợp lệ (chỉ STAFF/MANAGER)
 const VALID_TRANSITIONS = {
@@ -42,6 +43,9 @@ const create = async (req, res) => {
         const status = err.statusCode || 500;
         res.status(status).json({ message: err.message });
     }
+    // ✅ Gửi notification cho user sau khi tạo thành công
+    await notifyBookingConfirmed(req.user.id, data.reservation_date, data.start_time);
+
 };
 
 // ─── GET MY RESERVATIONS ──────────────────────────────────────────────────────
@@ -149,6 +153,8 @@ const cancel = async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
+    // ✅ Gửi notification cho user sau khi hủy thành công
+    await notifyBookingCancelled(reservation.user_id, reservation.reservation_date, reservation.start_time);
 };
 
 module.exports = { create, getMyReservations, getAll, getById, updateStatus, cancel };

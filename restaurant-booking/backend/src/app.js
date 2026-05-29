@@ -21,6 +21,13 @@ const menuRoutes = require('./routes/menu.routes');
 app.use('/api/menu', menuRoutes);
 const reservationRoutes = require('./routes/reservation.routes');
 app.use('/api/reservations', reservationRoutes);
+const preOrderRoutes = require('./routes/preOrder.routes');
+app.use('/api/pre-orders', preOrderRoutes);
+const reviewRoutes = require('./routes/review.routes');
+app.use('/api/reviews', reviewRoutes);
+const notificationRoutes = require('./routes/notification.routes');
+app.use('/api/notifications', notificationRoutes);
+
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
