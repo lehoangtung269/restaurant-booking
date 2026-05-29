@@ -29,6 +29,12 @@ const createOrUpdate = async (req, res) => {
             if (!menuItem.is_available) return res.status(400).json({ message: `${menuItem.name} is not available` });
         }
 
+        // Nếu đã có pre_order thì check status trước khi update
+        let preOrder = await PreOrder.findByReservation(reservation_id);
+        if (preOrder && preOrder.status === 'CANCELLED') {
+            return res.status(400).json({ message: 'Cannot update a cancelled pre-order' });
+        }
+
         const result = await db.transaction(async (trx) => {
             // Tính total
             let total_amount = 0;
@@ -45,9 +51,6 @@ const createOrUpdate = async (req, res) => {
                     notes: item.notes || null
                 });
             }
-
-            // Nếu đã có pre_order thì update, chưa có thì tạo mới
-            let preOrder = await PreOrder.findByReservation(reservation_id);
 
             if (preOrder) {
                 await PreOrder.deleteItems(trx, preOrder.id);

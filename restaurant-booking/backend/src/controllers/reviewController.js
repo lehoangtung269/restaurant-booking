@@ -39,7 +39,8 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const reviews = await Review.getAll();
+        const { limit } = req.query;
+        const reviews = await Review.getAll(limit);
         res.json(reviews);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
@@ -57,10 +58,11 @@ const getMyReviews = async (req, res) => {
 
 const reply = async (req, res) => {
     try {
-        const { manager_reply } = req.body;
-        if (!manager_reply) return res.status(400).json({ message: 'Missing reply' });
+        const { manager_reply, reply } = req.body;
+        const actualReply = manager_reply || reply;
+        if (!actualReply) return res.status(400).json({ message: 'Missing reply' });
 
-        const [updated] = await Review.managerReply(req.params.id, manager_reply);
+        const [updated] = await Review.managerReply(req.params.id, actualReply);
         if (!updated) return res.status(404).json({ message: 'Review not found' });
 
         res.json(updated);

@@ -77,7 +77,23 @@ const validateCreateReservation = [
             }
             return true;
         }),
-    body('start_time').matches(/^\d{2}:\d{2}(:\d{2})?$/).withMessage('start_time must be HH:MM or HH:MM:SS'),
+    body('start_time').matches(/^\d{2}:\d{2}(:\d{2})?$/).withMessage('start_time must be HH:MM or HH:MM:SS')
+        .custom((startTime, { req }) => {
+            const date = req.body.reservation_date;
+            if (!date) return true; // lỗi date sẽ bắt ở trên
+            // Nếu là ngày hôm nay, kiểm tra start_time chưa qua
+            const today = new Date().toISOString().split('T')[0];
+            if (date === today) {
+                const [h, m] = startTime.split(':').map(Number);
+                const reservationMinutes = h * 60 + m;
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                if (reservationMinutes <= currentMinutes) {
+                    throw new Error('start_time has already passed for today');
+                }
+            }
+            return true;
+        }),
     body('end_time').optional().matches(/^\d{2}:\d{2}(:\d{2})?$/).withMessage('end_time must be HH:MM or HH:MM:SS'),
     body('guest_count').isInt({ min: 1 }).withMessage('guest_count must be at least 1'),
     body('special_notes').optional().isString().trim().isLength({ max: 500 }).withMessage('special_notes max 500 chars'),
@@ -108,6 +124,35 @@ const validateCreatePreOrder = [
     handleValidation,
 ];
 
+const validateCheckAvailability = [
+    query('date').isDate({ format: 'YYYY-MM-DD' }).withMessage('date must be YYYY-MM-DD')
+        .custom(val => {
+            if (new Date(val) < new Date().setHours(0, 0, 0, 0)) {
+                throw new Error('date cannot be in the past');
+            }
+            return true;
+        }),
+    query('start_time').matches(/^\d{2}:\d{2}(:\d{2})?$/).withMessage('start_time must be HH:MM or HH:MM:SS')
+        .custom((startTime, { req }) => {
+            const date = req.query.date;
+            if (!date) return true;
+            const today = new Date().toISOString().split('T')[0];
+            if (date === today) {
+                const [h, m] = startTime.split(':').map(Number);
+                const reservationMinutes = h * 60 + m;
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                if (reservationMinutes <= currentMinutes) {
+                    throw new Error('start_time has already passed for today');
+                }
+            }
+            return true;
+        }),
+    query('guest_count').optional().isInt({ min: 1 }).withMessage('guest_count must be at least 1'),
+    query('area').optional().isIn(['INDOOR', 'OUTDOOR', 'VIP']).withMessage('area must be INDOOR, OUTDOOR or VIP'),
+    handleValidation,
+];
+
 module.exports = {
     handleValidation,
     // Auth
@@ -117,6 +162,7 @@ module.exports = {
     // Table
     validateCreateTable,
     validateUpdateTable,
+    validateCheckAvailability,
     // Menu
     validateCreateCategory,
     validateCreateItem,
@@ -128,3 +174,4 @@ module.exports = {
     // Pre-order
     validateCreatePreOrder,
 };
+

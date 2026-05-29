@@ -71,4 +71,21 @@ const updateStatus = async (req, res) => {
     }
 };
 
-module.exports = { getAll, getById, create, update, remove, updateStatus };
+const { calcEndTime } = require('../services/availabilityService');
+
+// Kiểm tra bàn trống theo ngày, giờ, số khách, khu vực
+const getAvailable = async (req, res) => {
+    try {
+        const { date, start_time, guest_count, area } = req.query;
+        if (!date || !start_time) {
+            return res.status(400).json({ message: 'date and start_time are required' });
+        }
+        const end_time = calcEndTime(start_time);
+        const availableTables = await Table.getAvailableTables(date, start_time, end_time, guest_count, area);
+        res.json(availableTables);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+module.exports = { getAll, getById, create, update, remove, updateStatus, getAvailable };

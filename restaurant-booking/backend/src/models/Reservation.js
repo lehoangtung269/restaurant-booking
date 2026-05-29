@@ -56,12 +56,21 @@ const Reservation = {
             .update({ status, modified_date: db.fn.now(), ...extra })
             .returning('*'),
 
-    // Cập nhật ghi chú nhanh của Staff (ghế trẻ em, bánh sinh nhật...)
-    updateStaffNote: (id, staff_note) =>
-        db('reservations')
+    // Cập nhật ghi chú nhanh của Staff — APPEND vào special_notes, giữ nguyên ghi chú của khách
+    // Format: "[Gốc]: <customer note> | [Staff]: <staff note>"
+    updateStaffNote: async (id, staffNote) => {
+        const reservation = await db('reservations').where({ id }).first();
+        const existingNote = reservation.special_notes || '';
+        // Nếu đã có staff note cũ thì thay thế phần [Staff]:, giữ phần khách
+        const customerPart = existingNote.split(' | [Staff]:')[0];
+        const newNote = staffNote
+            ? `${customerPart} | [Staff]: ${staffNote}`.trim()
+            : customerPart.trim();
+        return db('reservations')
             .where({ id })
-            .update({ special_notes: staff_note, modified_date: db.fn.now() })
-            .returning('*'),
+            .update({ special_notes: newNote, modified_date: db.fn.now() })
+            .returning('*');
+    },
 
     // Tìm reservation xung đột trong transaction với FOR UPDATE row lock
     // Overlap: existing.start_time < new.end_time AND existing.end_time > new.start_time

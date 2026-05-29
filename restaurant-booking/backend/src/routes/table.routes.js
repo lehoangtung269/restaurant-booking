@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getAll, getById, create, update, remove, updateStatus } = require('../controllers/tableController');
+const { getAll, getById, create, update, remove, updateStatus, getAvailable } = require('../controllers/tableController');
 const { verifyToken, requireRole } = require('../middlewares/auth');
-const { validateCreateTable, validateUpdateTable } = require('../middlewares/validate');
+const { validateCreateTable, validateUpdateTable, validateCheckAvailability } = require('../middlewares/validate');
 
 router.get('/', getAll);
+router.get('/availability', validateCheckAvailability, getAvailable);
 router.get('/:id', getById);
 router.post('/', verifyToken, requireRole('MANAGER'), validateCreateTable, create);
 router.put('/:id', verifyToken, requireRole('MANAGER'), validateUpdateTable, update);

@@ -4,6 +4,7 @@ const cron = require('node-cron');
 const Reservation = require('./models/Reservation');
 const User = require('./models/User');
 const { sendBookingReminder } = require('./services/emailService');
+const { notifyReminder } = require('./services/notificationService');
 
 const PORT = process.env.PORT || 5000;
 
@@ -34,7 +35,7 @@ async function startServer() {
             }
         });
 
-        // Cron job: gửi email nhắc nhở trước 2 tiếng — chạy mỗi 5 phút
+        // Cron job: gửi email + notification nhắc nhở trước 2 tiếng — chạy mỗi 5 phút
         cron.schedule('*/5 * * * *', async () => {
             try {
                 const now = new Date();
@@ -51,6 +52,7 @@ async function startServer() {
                     )
                     .select(
                         'reservations.id',
+                        'reservations.user_id',
                         'reservations.reservation_date',
                         'reservations.start_time',
                         'users.email',
@@ -59,6 +61,7 @@ async function startServer() {
                     );
 
                 for (const r of reminders) {
+                    // Gửi email
                     await sendBookingReminder(
                         r.email,
                         r.full_name,
@@ -66,10 +69,16 @@ async function startServer() {
                         r.start_time,
                         r.table_number
                     );
+                    // Tạo in-app notification
+                    await notifyReminder(
+                        r.user_id,
+                        r.reservation_date,
+                        r.start_time
+                    );
                 }
 
                 if (reminders.length > 0) {
-                    console.log(`📧 [Cron] Sent ${reminders.length} reminder email(s)`);
+                    console.log(`📧 [Cron] Sent ${reminders.length} reminder email(s) and in-app notification(s)`);
                 }
             } catch (err) {
                 console.error('❌ [Cron] Reminder job failed:', err.message);
