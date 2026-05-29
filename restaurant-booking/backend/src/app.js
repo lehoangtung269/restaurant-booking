@@ -27,6 +27,8 @@ const reviewRoutes = require('./routes/review.routes');
 app.use('/api/reviews', reviewRoutes);
 const notificationRoutes = require('./routes/notification.routes');
 app.use('/api/notifications', notificationRoutes);
+const dashboardRoutes = require('./routes/dashboard.routes');
+app.use('/api/dashboard', dashboardRoutes);
 
 
 app.get('/api/health', (req, res) => {

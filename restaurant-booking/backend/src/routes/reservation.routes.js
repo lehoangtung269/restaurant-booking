@@ -9,9 +9,10 @@ const {
     cancel,
 } = require('../controllers/reservationController');
 const { verifyToken, requireRole } = require('../middlewares/auth');
+const { validateCreateReservation, validateUpdateStatus } = require('../middlewares/validate');
 
 // Customer tạo đặt bàn
-router.post('/', verifyToken, create);
+router.post('/', verifyToken, validateCreateReservation, create);
 
 // Customer xem đặt bàn của mình (đặt trước /:id để tránh conflict)
 router.get('/my', verifyToken, getMyReservations);
@@ -23,7 +24,7 @@ router.get('/', verifyToken, requireRole('STAFF', 'MANAGER'), getAll);
 router.get('/:id', verifyToken, getById);
 
 // Staff/Manager chuyển trạng thái (state machine)
-router.patch('/:id/status', verifyToken, requireRole('STAFF', 'MANAGER'), updateStatus);
+router.patch('/:id/status', verifyToken, requireRole('STAFF', 'MANAGER'), validateUpdateStatus, updateStatus);
 
 // Customer tự huỷ (deadline 2h)
 router.patch('/:id/cancel', verifyToken, cancel);

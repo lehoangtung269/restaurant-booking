@@ -79,4 +79,27 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getMe };
+const refreshToken = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) return res.status(400).json({ message: 'Refresh token required' });
+
+        let decoded;
+        try {
+            decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        } catch (err) {
+            return res.status(403).json({ message: 'Invalid or expired refresh token' });
+        }
+
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user.is_active) return res.status(403).json({ message: 'Account disabled' });
+
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+        res.json({ accessToken, refreshToken: newRefreshToken });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+module.exports = { register, login, getMe, refreshToken };
