@@ -102,4 +102,46 @@ const refreshToken = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getMe, refreshToken };
+const updateProfile = async (req, res) => {
+    try {
+        const { full_name, phone } = req.body;
+        if (!full_name && !phone) {
+            return res.status(400).json({ message: 'Provide at least full_name or phone to update' });
+        }
+
+        const updates = {};
+        if (full_name) updates.full_name = full_name.trim();
+        if (phone) updates.phone = phone.trim();
+
+        const [updated] = await User.update(req.user.id, updates);
+        res.json({ id: updated.id, full_name: updated.full_name, email: updated.email, phone: updated.phone, role: updated.role });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+const changePassword = async (req, res) => {
+    try {
+        const { current_password, new_password } = req.body;
+        if (!current_password || !new_password) {
+            return res.status(400).json({ message: 'current_password and new_password are required' });
+        }
+        if (new_password.length < 6) {
+            return res.status(400).json({ message: 'new_password must be at least 6 characters' });
+        }
+
+        const user = await User.findById(req.user.id);
+        const match = await bcrypt.compare(current_password, user.password_hash);
+        if (!match) {
+            return res.status(401).json({ message: 'Current password is incorrect' });
+        }
+
+        const password_hash = await bcrypt.hash(new_password, 10);
+        await User.update(req.user.id, { password_hash });
+        res.json({ message: 'Password changed successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+module.exports = { register, login, getMe, refreshToken, updateProfile, changePassword };

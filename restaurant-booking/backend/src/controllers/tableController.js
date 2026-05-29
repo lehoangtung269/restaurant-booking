@@ -54,4 +54,21 @@ const remove = async (req, res) => {
     }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+// Staff cập nhật trạng thái bàn thủ công: AVAILABLE ↔ MAINTENANCE
+const updateStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        const validStatuses = ['AVAILABLE', 'MAINTENANCE'];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'status must be AVAILABLE or MAINTENANCE' });
+        }
+        const table = await Table.findById(req.params.id);
+        if (!table) return res.status(404).json({ message: 'Table not found' });
+        const [updated] = await Table.update(req.params.id, { status });
+        res.json(updated);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+module.exports = { getAll, getById, create, update, remove, updateStatus };

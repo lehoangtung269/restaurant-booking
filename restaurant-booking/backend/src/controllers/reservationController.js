@@ -72,8 +72,8 @@ const getMyReservations = async (req, res) => {
 // ─── GET ALL (STAFF / MANAGER) ────────────────────────────────────────────────
 const getAll = async (req, res) => {
     try {
-        const { date, status, table_id } = req.query;
-        const reservations = await Reservation.getAll({ date, status, table_id });
+        const { date, status, table_id, area } = req.query;
+        const reservations = await Reservation.getAll({ date, status, table_id, area });
         res.json(reservations);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
@@ -176,4 +176,66 @@ const cancel = async (req, res) => {
     }
 };
 
-module.exports = { create, getMyReservations, getAll, getById, updateStatus, cancel };
+// ─── MANAGER CANCEL (có lý do, không giới hạn deadline) ─────────────────────
+const managerCancel = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        if (!reason || !reason.trim()) {
+            return res.status(400).json({ message: 'Cancellation reason is required' });
+        }
+
+        const reservation = await Reservation.findById(req.params.id);
+        if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
+
+        if (!['CONFIRMED', 'SEATED'].includes(reservation.status)) {
+            return res.status(400).json({ message: 'Only CONFIRMED or SEATED reservations can be cancelled' });
+        }
+
+        const db = require('../config/database');
+        const [updated] = await Reservation.updateStatus(db, req.params.id, 'CANCELLED', {
+            cancelled_by: req.user.id,
+            cancelled_at: new Date(),
+            // Ghi lý do vào special_notes để lưu lại
+            special_notes: `[HUỶ BỚI NHÀ HÀNG] ${reason}`,
+        });
+
+        res.json({ message: 'Reservation cancelled by manager', reservation: updated });
+
+        // Fire-and-forget: gửi email + notification cho customer
+        const user = await User.findById(reservation.user_id);
+        await sendBookingCancellation(
+            user.email,
+            user.full_name,
+            reservation.reservation_date,
+            reservation.start_time
+        );
+        await notifyBookingCancelled(reservation.user_id, reservation.reservation_date, reservation.start_time);
+
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+// ─── ADD STAFF NOTE ───────────────────────────────────────────────────────────
+const addStaffNote = async (req, res) => {
+    try {
+        const { note } = req.body;
+        if (!note || !note.trim()) {
+            return res.status(400).json({ message: 'note is required' });
+        }
+
+        const reservation = await Reservation.findById(req.params.id);
+        if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
+
+        if (!['CONFIRMED', 'SEATED'].includes(reservation.status)) {
+            return res.status(400).json({ message: 'Cannot add note to a closed reservation' });
+        }
+
+        const [updated] = await Reservation.updateStaffNote(req.params.id, note.trim());
+        res.json(updated);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
+module.exports = { create, getMyReservations, getAll, getById, updateStatus, cancel, managerCancel, addStaffNote };

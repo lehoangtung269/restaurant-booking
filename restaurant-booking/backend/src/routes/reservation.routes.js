@@ -7,6 +7,8 @@ const {
     getById,
     updateStatus,
     cancel,
+    managerCancel,
+    addStaffNote,
 } = require('../controllers/reservationController');
 const { verifyToken, requireRole } = require('../middlewares/auth');
 const { validateCreateReservation, validateUpdateStatus } = require('../middlewares/validate');
@@ -28,5 +30,11 @@ router.patch('/:id/status', verifyToken, requireRole('STAFF', 'MANAGER'), valida
 
 // Customer tự huỷ (deadline 2h)
 router.patch('/:id/cancel', verifyToken, cancel);
+
+// Manager huỷ với lý do (không giới hạn deadline) — body: { reason }
+router.patch('/:id/manager-cancel', verifyToken, requireRole('MANAGER'), managerCancel);
+
+// Staff/Manager thêm ghi chú nhanh (ghế trẻ em, bánh sinh nhật...) — body: { note }
+router.patch('/:id/note', verifyToken, requireRole('STAFF', 'MANAGER'), addStaffNote);
 
 module.exports = router;

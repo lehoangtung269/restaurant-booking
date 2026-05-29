@@ -42,6 +42,7 @@ const Reservation = {
         if (filters.date) query.where('r.reservation_date', filters.date);
         if (filters.status) query.where('r.status', filters.status);
         if (filters.table_id) query.where('r.table_id', filters.table_id);
+        if (filters.area) query.where('t.area', filters.area); // lọc theo khu vực bàn
 
         return query;
     },
@@ -53,6 +54,13 @@ const Reservation = {
         trx('reservations')
             .where({ id })
             .update({ status, modified_date: db.fn.now(), ...extra })
+            .returning('*'),
+
+    // Cập nhật ghi chú nhanh của Staff (ghế trẻ em, bánh sinh nhật...)
+    updateStaffNote: (id, staff_note) =>
+        db('reservations')
+            .where({ id })
+            .update({ special_notes: staff_note, modified_date: db.fn.now() })
             .returning('*'),
 
     // Tìm reservation xung đột trong transaction với FOR UPDATE row lock
