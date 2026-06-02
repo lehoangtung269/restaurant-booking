@@ -2,9 +2,12 @@ import { Outlet, Route, Routes } from 'react-router-dom';
 import { PublicFooter } from './components/PublicFooter';
 import { PublicHeader } from './components/PublicHeader';
 import { LoginPage, RegisterPage, StaffLoginPage } from './pages/AuthPages';
+import { BookingConfirmationPage } from './pages/BookingConfirmationPage';
+import { BookingPage } from './pages/BookingPage';
 import { ComingSoonPage } from './pages/ComingSoonPage';
 import { HomePage } from './pages/HomePage';
 import { MenuPage } from './pages/MenuPage';
+import { PreOrderPage } from './pages/PreOrderPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StaffPage } from './pages/StaffPage';
 
@@ -31,15 +34,9 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route
-          path="/booking/tables"
-          element={
-            <ComingSoonPage
-              title="Booking flow"
-              text="Phan tiep theo se dung /api/tables/availability de chon ban va tao reservation."
-            />
-          }
-        />
+        <Route path="/booking/tables" element={<BookingPage />} />
+        <Route path="/booking/pre-order/:reservationId" element={<PreOrderPage />} />
+        <Route path="/booking/confirm/:reservationId" element={<BookingConfirmationPage />} />
       </Route>
 
       <Route element={<AuthLayout />}>

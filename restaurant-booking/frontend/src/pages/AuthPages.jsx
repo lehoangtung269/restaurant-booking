@@ -1,10 +1,17 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Toast } from '../components/Toast';
 import { useAuth } from '../contexts/authContextValue';
 import { heroImages } from '../data/fallbackData';
 
-function AuthShell({ mode, children }) {
+const getSafeReturnTo = (searchParams) => {
+  const returnTo = searchParams.get('returnTo');
+  return returnTo?.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '';
+};
+
+const withReturnTo = (path, returnTo) => (returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path);
+
+function AuthShell({ mode, returnTo = '', children }) {
   return (
     <main className="auth-page">
       <section className="auth-column">
@@ -13,7 +20,9 @@ function AuthShell({ mode, children }) {
             <Link to="/" className="brand-link">
               Maison Edem
             </Link>
-            <Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Register' : 'Login'}</Link>
+            <Link to={withReturnTo(mode === 'login' ? '/register' : '/login', returnTo)}>
+              {mode === 'login' ? 'Register' : 'Login'}
+            </Link>
           </div>
           {children}
         </div>
@@ -35,6 +44,8 @@ export function LoginPage() {
   const [message, setMessage] = useState('');
   const { login, logout, getHomePath } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = getSafeReturnTo(searchParams);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -46,14 +57,14 @@ export function LoginPage() {
         setMessage('Please use the staff portal for this account.');
         return;
       }
-      navigate(getHomePath(user.role));
+      navigate(returnTo || getHomePath(user.role));
     } catch (err) {
       setMessage(err.message);
     }
   };
 
   return (
-    <AuthShell mode="login">
+    <AuthShell mode="login" returnTo={returnTo}>
       <Toast message={message} />
       <div className="auth-panel">
         <p className="eyebrow gold">Welcome back</p>
@@ -81,7 +92,7 @@ export function LoginPage() {
           </button>
         </form>
         <div className="auth-switch">
-          New to Maison Edem? <Link to="/register">Create account</Link>
+          New to Maison Edem? <Link to={withReturnTo('/register', returnTo)}>Create account</Link>
         </div>
         <div className="auth-switch subtle">
           Internal team? <Link to="/staff/login">Staff portal</Link>
@@ -169,6 +180,8 @@ export function RegisterPage() {
   const [message, setMessage] = useState('');
   const { register, getHomePath } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = getSafeReturnTo(searchParams);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -188,14 +201,14 @@ export function RegisterPage() {
         email: form.email,
         password: form.password,
       });
-      navigate(getHomePath(user.role));
+      navigate(returnTo || getHomePath(user.role));
     } catch (err) {
       setMessage(err.message);
     }
   };
 
   return (
-    <AuthShell mode="register">
+    <AuthShell mode="register" returnTo={returnTo}>
       <Toast message={message} />
       <div className="auth-panel">
         <p className="eyebrow gold">Create account</p>
@@ -225,13 +238,6 @@ export function RegisterPage() {
             onChange={(event) => setForm({ ...form, email: event.target.value })}
             required
           />
-          <select className="field" defaultValue="">
-            <option value="">Preferred occasion</option>
-            <option>Private dinner</option>
-            <option>Anniversary</option>
-            <option>Business dinner</option>
-            <option>Chef tasting</option>
-          </select>
           <div className="two-fields">
             <input
               className="field"
@@ -263,7 +269,7 @@ export function RegisterPage() {
           </button>
         </form>
         <div className="auth-switch">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to={withReturnTo('/login', returnTo)}>Sign in</Link>
         </div>
       </div>
     </AuthShell>
