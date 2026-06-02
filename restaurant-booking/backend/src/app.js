@@ -53,4 +53,38 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
 });
 
+// 404 handler - must be after all routes
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+// Centralized error handler - must be last
+app.use((err, req, res, next) => {
+    // Log error for debugging (in production, use proper logging service)
+    console.error('Error:', err.message);
+    if (process.env.NODE_ENV !== 'production') {
+        console.error(err.stack);
+    }
+
+    // Determine status code
+    const statusCode = err.statusCode || 500;
+
+    // Prepare error response
+    const errorResponse = {
+        message: err.message || 'Internal server error',
+    };
+
+    // In development, include stack trace
+    if (process.env.NODE_ENV !== 'production') {
+        errorResponse.stack = err.stack;
+    }
+
+    // Don't leak sensitive database errors in production
+    if (statusCode === 500 && process.env.NODE_ENV === 'production') {
+        errorResponse.message = 'Internal server error';
+    }
+
+    res.status(statusCode).json(errorResponse);
+});
+
 module.exports = app;

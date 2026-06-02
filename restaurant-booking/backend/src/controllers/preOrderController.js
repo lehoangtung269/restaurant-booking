@@ -14,7 +14,7 @@ const createOrUpdate = async (req, res) => {
         const reservation = await Reservation.findById(reservation_id);
         if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
 
-        if (reservation.user_id != req.user.id) {
+        if (reservation.user_id !== req.user.id) {
             return res.status(403).json({ message: 'Forbidden' });
         }
 
@@ -81,7 +81,7 @@ const getByReservation = async (req, res) => {
         const reservation = await Reservation.findById(reservation_id);
         if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
 
-        if (reservation.user_id != req.user.id && !['STAFF', 'MANAGER'].includes(req.user.role)) {
+        if (reservation.user_id !== req.user.id && !['STAFF', 'MANAGER'].includes(req.user.role)) {
             return res.status(403).json({ message: 'Forbidden' });
         }
 
@@ -104,7 +104,7 @@ const cancel = async (req, res) => {
         const reservation = await Reservation.findById(reservation_id);
         if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
 
-        if (reservation.user_id != req.user.id) {
+        if (reservation.user_id !== req.user.id) {
             return res.status(403).json({ message: 'Forbidden' });
         }
 

@@ -16,7 +16,7 @@ const create = async (req, res) => {
         const reservation = await Reservation.findById(reservation_id);
         if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
 
-        if (reservation.user_id != req.user.id) {
+        if (reservation.user_id !== req.user.id) {
             return res.status(403).json({ message: 'Forbidden' });
         }
 
@@ -39,7 +39,16 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
     try {
-        const { limit } = req.query;
+        let { limit } = req.query;
+
+        // Validate limit if provided
+        if (limit) {
+            limit = parseInt(limit, 10);
+            if (isNaN(limit) || limit < 1 || limit > 100) {
+                return res.status(400).json({ message: 'Invalid limit parameter (must be 1-100)' });
+            }
+        }
+
         const reviews = await Review.getAll(limit);
         res.json(reviews);
     } catch (err) {

@@ -2,7 +2,9 @@ const knex = require('knex')({
     client: 'postgresql',
     connection: {
         connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false, requestCert: false }
+        ssl: process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: true }
+            : { rejectUnauthorized: false }
     },
     pool: { min: 2, max: 10 }
 });

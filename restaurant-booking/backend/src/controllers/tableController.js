@@ -36,7 +36,22 @@ const update = async (req, res) => {
     try {
         const table = await Table.findById(req.params.id);
         if (!table) return res.status(404).json({ message: 'Table not found' });
-        const [updated] = await Table.update(req.params.id, req.body);
+
+        // Allowlist of updatable fields to prevent mass assignment
+        const allowedFields = ['table_number', 'capacity', 'location', 'status'];
+        const updateData = {};
+
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No valid fields to update' });
+        }
+
+        const [updated] = await Table.update(req.params.id, updateData);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });

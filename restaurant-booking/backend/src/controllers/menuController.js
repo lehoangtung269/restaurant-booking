@@ -30,7 +30,22 @@ const updateCategory = async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
         if (!category) return res.status(404).json({ message: 'Category not found' });
-        const [updated] = await Category.update(req.params.id, req.body);
+
+        // Allowlist of updatable fields to prevent mass assignment
+        const allowedFields = ['name', 'description'];
+        const updateData = {};
+
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No valid fields to update' });
+        }
+
+        const [updated] = await Category.update(req.params.id, updateData);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
@@ -88,7 +103,28 @@ const updateItem = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);
         if (!item) return res.status(404).json({ message: 'Item not found' });
-        const [updated] = await MenuItem.update(req.params.id, req.body);
+
+        // Allowlist of updatable fields to prevent mass assignment
+        const allowedFields = ['name', 'description', 'price', 'category_id', 'is_available', 'image_url'];
+        const updateData = {};
+
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                updateData[field] = req.body[field];
+            }
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ message: 'No valid fields to update' });
+        }
+
+        // Validate category_id if provided
+        if (updateData.category_id) {
+            const category = await Category.findById(updateData.category_id);
+            if (!category) return res.status(404).json({ message: 'Category not found' });
+        }
+
+        const [updated] = await MenuItem.update(req.params.id, updateData);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });

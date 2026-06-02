@@ -46,8 +46,25 @@ const getOverview = async (req, res) => {
 // GET /api/dashboard/revenue?year=YYYY&month=MM (month tuỳ chọn)
 const getRevenue = async (req, res) => {
     try {
-        const { year, month } = req.query;
-        if (!year) return res.status(400).json({ message: 'year is required' });
+        let { year, month } = req.query;
+
+        // Validate year
+        if (year) {
+            year = parseInt(year, 10);
+            if (isNaN(year) || year < 2000 || year > 2100) {
+                return res.status(400).json({ message: 'Invalid year parameter' });
+            }
+        } else {
+            return res.status(400).json({ message: 'year is required' });
+        }
+
+        // Validate month
+        if (month) {
+            month = parseInt(month, 10);
+            if (isNaN(month) || month < 1 || month > 12) {
+                return res.status(400).json({ message: 'Invalid month parameter' });
+            }
+        }
 
         // Nếu có month → thống kê theo ngày trong tháng
         // Nếu chỉ có year → thống kê theo tháng trong năm
@@ -162,7 +179,13 @@ const getOccupancy = async (req, res) => {
 // GET /api/dashboard/top-items?limit=10&from=YYYY-MM-DD&to=YYYY-MM-DD
 const getTopItems = async (req, res) => {
     try {
-        const { limit = 10, from, to } = req.query;
+        let { limit = 10, from, to } = req.query;
+
+        // Validate limit
+        limit = parseInt(limit, 10);
+        if (isNaN(limit) || limit < 1 || limit > 100) {
+            return res.status(400).json({ message: 'Invalid limit parameter (must be 1-100)' });
+        }
 
         const items = await db('pre_order_items as poi')
             .join('pre_orders as po', 'poi.pre_order_id', 'po.id')

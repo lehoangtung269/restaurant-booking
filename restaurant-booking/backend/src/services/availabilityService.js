@@ -5,12 +5,24 @@ const Reservation = require('../models/Reservation');
  * Tính end_time = start_time + 2 tiếng (format HH:MM:SS)
  * @param {string} startTime - "HH:MM" hoặc "HH:MM:SS"
  * @returns {string} - "HH:MM:SS"
+ * @throws {Error} if reservation would cross midnight
  */
 const calcEndTime = (startTime) => {
     const [h, m] = startTime.split(':').map(Number);
     const totalMinutes = h * 60 + m + 120; // +2h
-    const endH = Math.floor(totalMinutes / 60) % 24;
+    const endH = Math.floor(totalMinutes / 60);
     const endM = totalMinutes % 60;
+
+    // Check if reservation crosses midnight (endH >= 24)
+    // This is not supported because TIME columns don't carry date info,
+    // causing conflict detection to fail
+    if (endH >= 24) {
+        throw Object.assign(
+            new Error('Reservations cannot cross midnight. Latest start time is 22:00.'),
+            { statusCode: 400 }
+        );
+    }
+
     return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`;
 };
 
