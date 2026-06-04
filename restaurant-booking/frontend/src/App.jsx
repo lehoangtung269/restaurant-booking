@@ -3,6 +3,7 @@ import { PublicFooter } from './components/PublicFooter';
 import { PublicHeader } from './components/PublicHeader';
 import { LoginPage, RegisterPage, StaffLoginPage } from './pages/AuthPages';
 import { BookingConfirmationPage } from './pages/BookingConfirmationPage';
+import { BookingHistoryPage } from './pages/BookingHistoryPage';
 import { BookingPage } from './pages/BookingPage';
 import { ComingSoonPage } from './pages/ComingSoonPage';
 import { HomePage } from './pages/HomePage';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/booking/tables" element={<BookingPage />} />
         <Route path="/booking/pre-order/:reservationId" element={<PreOrderPage />} />
         <Route path="/booking/confirm/:reservationId" element={<BookingConfirmationPage />} />
+        <Route path="/booking/history" element={<BookingHistoryPage />} />
       </Route>
 
       <Route element={<AuthLayout />}>

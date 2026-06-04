@@ -15,10 +15,13 @@ export const todayISO = () => {
 
 export const displayDate = (value) => {
   if (!value) return 'Chua chon ngay';
+  const normalized = String(value).includes('T') ? String(value).slice(0, 10) : value;
+  const date = new Date(`${normalized}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Ngay khong hop le';
   return new Intl.DateTimeFormat('vi-VN', {
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(new Date(`${value}T00:00:00`));
+  }).format(date);
 };

@@ -8,6 +8,7 @@ const nav = [
   { label: 'Story', to: '/#story' },
   { label: 'Menu', to: '/menu' },
   { label: 'Reserve', to: '/booking/tables' },
+  { label: 'History', to: '/booking/history' },
 ];
 
 export function PublicHeader() {
@@ -51,7 +52,7 @@ export function PublicHeader() {
         </nav>
 
         <div className="header-actions">
-          <Link to={user ? getHomePath() : '/booking/tables'} className="pill-cta desktop-only">
+          <Link to="/booking/tables" className="pill-cta desktop-only">
             Book a table
           </Link>
 
@@ -74,6 +75,9 @@ export function PublicHeader() {
                   </div>
                   <Link to="/profile" onClick={() => setProfileOpen(false)}>
                     Profile
+                  </Link>
+                  <Link to="/booking/history" onClick={() => setProfileOpen(false)}>
+                    Booking history
                   </Link>
                   <button type="button" onClick={handleLogout}>
                     Logout

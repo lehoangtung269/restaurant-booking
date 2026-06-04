@@ -5,6 +5,8 @@ import { api, getErrorMessage } from '../lib/api';
 import { clearBookingDraft } from '../lib/bookingDraft';
 import { displayDate, money } from '../lib/format';
 
+const bookingCode = (id) => `ME-${String(id).padStart(5, '0')}`;
+
 export function BookingConfirmationPage() {
   const { reservationId } = useParams();
   const [reservation, setReservation] = useState(null);
@@ -61,6 +63,10 @@ export function BookingConfirmationPage() {
             Maison Edem has confirmed your booking automatically. Our dining room team will prepare the table before
             your arrival.
           </p>
+          <div className="confirmation-code">
+            <span>Booking code</span>
+            <strong>{bookingCode(reservation.id)}</strong>
+          </div>
 
           <div className="confirmation-details">
             <div>
@@ -107,8 +113,8 @@ export function BookingConfirmationPage() {
           )}
 
           <div className="confirmation-actions">
-            <Link className="gold-button" to="/profile">
-              View my profile
+            <Link className="gold-button" to="/booking/history">
+              View booking history
             </Link>
             <Link className="booking-secondary-link" to="/">
               Return home

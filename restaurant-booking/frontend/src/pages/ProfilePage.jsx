@@ -134,6 +134,21 @@ export function ProfilePage() {
               Change password
             </button>
           </form>
+
+          <section className="profile-card">
+            <div className="card-title-row">
+              <div>
+                <h2>Reservations</h2>
+                <p>Booking codes, tables and pre-order dishes.</p>
+              </div>
+            </div>
+            <Link className="gold-button full" to="/booking/history">
+              View booking history
+            </Link>
+            <Link className="booking-secondary-link" to="/booking/tables">
+              Create new reservation
+            </Link>
+          </section>
         </div>
       </section>
     </main>
