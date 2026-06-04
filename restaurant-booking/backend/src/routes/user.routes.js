@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, requireRole } = require('../middlewares/auth');
-const { getAll, getById, updateRole, updateActive, getUserReservations } = require('../controllers/userController');
+const { create, getAll, getById, updateRole, updateActive, getUserReservations } = require('../controllers/userController');
 
 // Tất cả routes đều cần MANAGER
 router.use(verifyToken, requireRole('MANAGER'));
 
 // Danh sách users — hỗ trợ ?role=STAFF|CUSTOMER|MANAGER
 router.get('/', getAll);
+
+// Tạo tài khoản nhân viên / quản lý / khách
+router.post('/', create);
 
 // Chi tiết 1 user
 router.get('/:id', getById);
