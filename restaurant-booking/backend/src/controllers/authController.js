@@ -24,6 +24,17 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+
+        // Validate password strength
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
         const existing = await User.findByEmail(email);
         if (existing) {
             return res.status(409).json({ message: 'Email already exists' });
