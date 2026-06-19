@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Toast } from '../components/Toast';
 import { useAuth } from '../contexts/authContextValue';
 import { api, getErrorMessage, tokenStore } from '../lib/api';
+import { useApi } from '../lib/useApi';
 
 export function ProfilePage() {
   const { user, isAuthenticated } = useAuth();
@@ -10,16 +11,15 @@ export function ProfilePage() {
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '' });
   const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    api
-      .get('/api/auth/me')
-      .then(({ data }) => {
-        setForm({ full_name: data.full_name || '', phone: data.phone || '' });
-        tokenStore.setSession({ user: data });
-      })
-      .catch(() => {});
-  }, [isAuthenticated]);
+  const { loading } = useApi(
+    useCallback(async () => {
+      if (!isAuthenticated) return;
+      const { data } = await api.get('/api/auth/me');
+      setForm({ full_name: data.full_name || '', phone: data.phone || '' });
+      tokenStore.setSession({ user: data });
+    }, [isAuthenticated]),
+    isAuthenticated
+  );
 
   const saveProfile = async (event) => {
     event.preventDefault();
@@ -58,6 +58,24 @@ export function ProfilePage() {
             Login
           </Link>
         </div>
+      </main>
+    );
+  }
+
+  if (loading) {
+    return (
+      <main className="profile-page">
+        <section className="profile-shell">
+          <div className="profile-heading">
+            <div className="skeleton" style={{ height: '20px', width: '80px', marginBottom: '8px' }} />
+            <div className="skeleton" style={{ height: '48px', width: '320px', marginBottom: '12px' }} />
+            <div className="skeleton" style={{ height: '18px', width: '450px' }} />
+          </div>
+          <div className="profile-grid" style={{ marginTop: '32px' }}>
+            <div className="profile-card skeleton" style={{ height: '320px', borderRadius: '18px' }} />
+            <div className="profile-card skeleton" style={{ height: '320px', borderRadius: '18px' }} />
+          </div>
+        </section>
       </main>
     );
   }

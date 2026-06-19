@@ -3473,3 +3473,120 @@ blockquote cite {
     width: 100%;
   }
 }
+
+/* ─── Custom Select Dropdown Styling ────────────────────────────────────────── */
+.custom-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  background: rgba(242, 231, 210, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--cream);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.custom-select-trigger:hover:not(:disabled) {
+  border-color: rgba(196, 154, 88, 0.45);
+  background: rgba(242, 231, 210, 0.08);
+}
+
+.custom-select-trigger:focus-visible {
+  outline: 0;
+  border-color: var(--gold);
+}
+
+.custom-select-arrow {
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.custom-select-container.is-open .custom-select-arrow {
+  transform: rotate(180deg);
+}
+
+.custom-select-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 150;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  background: rgba(17, 16, 13, 0.98);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+  max-height: 220px;
+  overflow-y: auto;
+  animation: selectFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-select-option {
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: rgba(242, 231, 210, 0.75);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.custom-select-option:hover {
+  background: rgba(196, 154, 88, 0.12);
+  color: var(--gold);
+}
+
+.custom-select-option.is-selected {
+  background: rgba(196, 154, 88, 0.22);
+  color: var(--gold);
+  font-weight: 800;
+}
+
+@keyframes selectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-select-container.is-disabled .custom-select-trigger {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+/* Also ensure form label select containers don't have standard select padding */
+.staff-form-panel label select,
+.staff-modal-body select {
+  display: none !important; /* hide standard native select if used concurrently */
+}
+
+/* Inline select inside tables/lists */
+.custom-select-container.inline-select {
+  width: 132px;
+}
+
+.custom-select-container.inline-select .custom-select-trigger {
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 0 12px;
+}

@@ -30,12 +30,14 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// ── Request: attach access token ─────────────────────────────────────────────
 api.interceptors.request.use((config) => {
   const token = tokenStore.getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+// ── Response: silent refresh on 401 ──────────────────────────────────────────
 let refreshRequest = null;
 
 api.interceptors.response.use(
@@ -43,17 +45,26 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    if (error.response?.status !== 401 || original?._retry || original?.url?.includes('/api/auth/refresh')) {
+    // Don't retry refresh calls or non-401 errors
+    if (
+      error.response?.status !== 401 ||
+      original?._retry ||
+      original?.url?.includes('/api/auth/refresh')
+    ) {
       return Promise.reject(error);
     }
 
     const refreshToken = tokenStore.getRefreshToken();
     if (!refreshToken) {
       tokenStore.clear();
+      // Notify AuthContext that the session is gone
+      window.dispatchEvent(new Event('auth:expired'));
       return Promise.reject(error);
     }
 
     original._retry = true;
+
+    // Deduplicate concurrent refresh calls
     refreshRequest ||= axios
       .post(`${API_BASE_URL}/api/auth/refresh`, { refreshToken })
       .then((res) => {
@@ -63,16 +74,27 @@ api.interceptors.response.use(
         });
         return res.data.accessToken;
       })
+      .catch((refreshError) => {
+        // Refresh itself failed (expired / revoked) → force logout
+        tokenStore.clear();
+        window.dispatchEvent(new Event('auth:expired'));
+        return Promise.reject(refreshError);
+      })
       .finally(() => {
         refreshRequest = null;
       });
 
-    const newAccessToken = await refreshRequest;
-    original.headers.Authorization = `Bearer ${newAccessToken}`;
-    return api(original);
+    try {
+      const newAccessToken = await refreshRequest;
+      original.headers.Authorization = `Bearer ${newAccessToken}`;
+      return api(original);
+    } catch {
+      return Promise.reject(error);
+    }
   },
 );
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 export const getErrorMessage = (error) => {
   const data = error?.response?.data;
   if (data?.errors?.length) return data.errors.map((item) => item.message).join(', ');

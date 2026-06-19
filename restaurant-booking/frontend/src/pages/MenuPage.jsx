@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { money } from '../lib/format';
 import { fallbackCategories, fallbackMenuItems, heroImages } from '../data/fallbackData';
+import { useSEO } from '../lib/useSEO';
 
 const groupMeta = {
   TASTING: { label: 'Tasting course', badge: '7 course / seasonal' },
@@ -15,6 +16,10 @@ const groupMeta = {
 
 export function MenuPage() {
   const [active, setActive] = useState('all');
+  useSEO({
+    title: 'Seasonal Menu',
+    description: 'Explore the Maison Edem seasonal tasting menu — fire room plates, desserts and botanical drinks.',
+  });
   const categoriesQuery = useQuery({
     queryKey: ['menu-categories'],
     queryFn: async () => (await api.get('/api/menu/categories')).data,
@@ -118,7 +123,11 @@ export function MenuPage() {
           {items.slice(0, 3).map((item) => (
             <article className="dish-card" key={item.id}>
               <div className="dish-image">
-                <img src={item.image_url || heroImages.menu} alt={item.name} />
+                <img
+                  src={item.image_url || heroImages.menu}
+                  alt={item.name}
+                  onError={(e) => { e.currentTarget.src = '/placeholder-dish.svg'; }}
+                />
               </div>
               <div className="dish-content">
                 <h3>{item.name}</h3>

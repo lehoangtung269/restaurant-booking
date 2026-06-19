@@ -1,4 +1,6 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { PrivateRoute, StaffRoute } from './components/PrivateRoute';
 import { PublicFooter } from './components/PublicFooter';
 import { PublicHeader } from './components/PublicHeader';
 import { LoginPage, RegisterPage, StaffLoginPage } from './pages/AuthPages';
@@ -28,28 +30,75 @@ function AuthLayout() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/staff" element={<StaffPage />} />
+    <ErrorBoundary>
+      <Routes>
+        {/* ── Staff portal (no public header/footer) ── */}
+        <Route
+          path="/staff"
+          element={
+            <StaffRoute>
+              <ErrorBoundary message="The staff portal encountered an error.">
+                <StaffPage />
+              </ErrorBoundary>
+            </StaffRoute>
+          }
+        />
 
-      <Route element={<PublicLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="/menu" element={<MenuPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/booking/tables" element={<BookingPage />} />
-        <Route path="/booking/pre-order/:reservationId" element={<PreOrderPage />} />
-        <Route path="/booking/confirm/:reservationId" element={<BookingConfirmationPage />} />
-        <Route path="/booking/history" element={<BookingHistoryPage />} />
-      </Route>
+        {/* ── Public pages with header/footer ── */}
+        <Route element={<PublicLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="/menu" element={<MenuPage />} />
 
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/staff/login" element={<StaffLoginPage />} />
-      </Route>
+          {/* Booking — open to all (auth check happens inside BookingPage before confirming) */}
+          <Route path="/booking/tables" element={<BookingPage />} />
 
-      <Route element={<PublicLayout />}>
-        <Route path="*" element={<ComingSoonPage title="Page not found" text="Route nay chua ton tai." />} />
-      </Route>
-    </Routes>
+          {/* Protected — requires CUSTOMER login */}
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute roles={['CUSTOMER']}>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/booking/pre-order/:reservationId"
+            element={
+              <PrivateRoute roles={['CUSTOMER']}>
+                <PreOrderPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/booking/confirm/:reservationId"
+            element={
+              <PrivateRoute roles={['CUSTOMER']}>
+                <BookingConfirmationPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/booking/history"
+            element={
+              <PrivateRoute roles={['CUSTOMER']}>
+                <BookingHistoryPage />
+              </PrivateRoute>
+            }
+          />
+        </Route>
+
+        {/* ── Auth pages (no header/footer) ── */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/staff/login" element={<StaffLoginPage />} />
+        </Route>
+
+        {/* ── 404 ── */}
+        <Route element={<PublicLayout />}>
+          <Route path="*" element={<ComingSoonPage title="Page not found" text="Route này chưa tồn tại." />} />
+        </Route>
+      </Routes>
+    </ErrorBoundary>
   );
 }

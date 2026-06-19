@@ -6,7 +6,20 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest"
+    "seed": "node src/seedDb.js",
+    "test": "jest",
+    "test:verbose": "jest --verbose",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 30000,
+    "testMatch": [
+      "**/src/__tests__/**/*.test.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/src/__tests__/setup.js"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -28,7 +41,9 @@
     "pg": "^8.21.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.4.1",
     "jest": "^30.4.2",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

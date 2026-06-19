@@ -1,56 +1,38 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { CalendarCheck2, Clock3, Search, ShoppingBag, UsersRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/authContextValue';
-import { api, getErrorMessage } from '../lib/api';
+import { api } from '../lib/api';
 import { displayDate, money } from '../lib/format';
+import { useApi } from '../lib/useApi';
 
 const bookingCode = (id) => `ME-${String(id).padStart(5, '0')}`;
 
 export function BookingHistoryPage() {
   const { isAuthenticated } = useAuth();
-  const [reservations, setReservations] = useState([]);
   const [preOrders, setPreOrders] = useState({});
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
+  const { data: reservations = [], loading, error } = useApi(
+    useCallback(async () => {
+      if (!isAuthenticated) return [];
+      const { data } = await api.get('/api/reservations/my');
 
-    let ignore = false;
-    const loadHistory = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const { data } = await api.get('/api/reservations/my');
-        if (ignore) return;
-        setReservations(data);
+      const settled = await Promise.allSettled(
+        data.slice(0, 20).map((res) => api.get(`/api/pre-orders/${res.id}`))
+      );
 
-        const settled = await Promise.allSettled(
-          data.slice(0, 20).map((reservation) => api.get(`/api/pre-orders/${reservation.id}`)),
-        );
-        if (ignore) return;
-
-        const nextPreOrders = {};
-        settled.forEach((result) => {
-          if (result.status === 'fulfilled') {
-            nextPreOrders[result.value.data.reservation_id] = result.value.data;
-          }
-        });
-        setPreOrders(nextPreOrders);
-      } catch (err) {
-        if (!ignore) setError(getErrorMessage(err));
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    };
-
-    loadHistory();
-    return () => {
-      ignore = true;
-    };
-  }, [isAuthenticated]);
+      const nextPreOrders = {};
+      settled.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          nextPreOrders[result.value.data.reservation_id] = result.value.data;
+        }
+      });
+      setPreOrders(nextPreOrders);
+      return data;
+    }, [isAuthenticated]),
+    isAuthenticated
+  );
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { money } from '../lib/format';
 import { fallbackMenuItems, fallbackReviews, heroImages } from '../data/fallbackData';
+import { useSEO } from '../lib/useSEO';
 
 function usePreviewData() {
   const menuQuery = useQuery({
@@ -24,6 +25,10 @@ function usePreviewData() {
 
 export function HomePage() {
   const { menu, reviews } = usePreviewData();
+  useSEO({
+    title: 'Fine Dining Restaurant',
+    description: 'Maison Edem — A botanical dining room shaped by fire, herbs, fermentation and seasonal produce. Reserve your table online.',
+  });
 
   return (
     <main className="noise">
@@ -116,7 +121,11 @@ export function HomePage() {
           {menu.map((item, index) => (
             <article className={`dish-card ${index === 1 ? 'dish-card--lower' : ''}`} key={item.id}>
               <div className="dish-image">
-                <img src={item.image_url || fallbackMenuItems[index]?.image_url} alt={item.name} />
+                <img
+                  src={item.image_url || fallbackMenuItems[index]?.image_url || '/placeholder-dish.svg'}
+                  alt={item.name}
+                  onError={(e) => { e.currentTarget.src = '/placeholder-dish.svg'; }}
+                />
               </div>
               <div className="dish-content">
                 <div>

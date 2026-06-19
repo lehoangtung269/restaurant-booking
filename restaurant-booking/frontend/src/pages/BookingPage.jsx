@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/authContextValue';
 import { getBookingDraft, saveBookingDraft } from '../lib/bookingDraft';
 import { api, getErrorMessage } from '../lib/api';
 import { displayDate, todayISO } from '../lib/format';
+import { useSEO } from '../lib/useSEO';
 
 const areas = [
   { value: '', label: 'Any area' },
@@ -81,8 +82,14 @@ export function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useSEO({
+    title: 'Reserve a Table',
+    description: 'Book your table at Maison Edem. Choose your date, time and dining area for a memorable evening.',
+  });
 
   const selectedTable = tables.find((table) => Number(table.id) === Number(draft.table_id));
 
@@ -148,7 +155,7 @@ export function BookingPage() {
     }
   };
 
-  const createReservation = async () => {
+  const handleConfirmClick = () => {
     if (!selectedTable) {
       setError('Please select an available table before continuing.');
       return;
@@ -164,6 +171,11 @@ export function BookingPage() {
       return;
     }
 
+    setConfirmOpen(true);
+  };
+
+  const createReservation = async () => {
+    setConfirmOpen(false);
     setSubmitting(true);
     setError('');
     try {
@@ -404,11 +416,47 @@ export function BookingPage() {
               Already have a profile? <Link to="/login?returnTo=/booking/tables">Sign in</Link>
             </p>
           )}
-          <button className="gold-button full" type="button" disabled={!selectedTable || submitting} onClick={createReservation}>
+          <button className="gold-button full" type="button" disabled={!selectedTable || submitting} onClick={handleConfirmClick}>
             {submitting ? 'Confirming...' : isAuthenticated ? 'Confirm reservation' : 'Sign in to reserve'}
           </button>
         </aside>
       </section>
+
+      {confirmOpen && (
+        <div className="staff-modal-backdrop" onClick={() => setConfirmOpen(false)}>
+          <div className="staff-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="staff-modal-head">
+              <div>
+                <p className="eyebrow gold">Maison Edem</p>
+                <h3>Confirm Reservation</h3>
+              </div>
+              <button type="button" onClick={() => setConfirmOpen(false)}>×</button>
+            </div>
+            <div className="staff-modal-body" style={{ display: 'grid', gap: '12px', color: 'var(--cream)' }}>
+              <p>Please review your reservation details below before finalizing your booking:</p>
+              <div style={{ display: 'grid', gap: '8px', background: 'rgba(242, 231, 210, 0.05)', padding: '14px', borderRadius: '14px', border: '1px solid var(--line)' }}>
+                <div><strong>Table:</strong> {selectedTable?.table_number} ({selectedTable?.area})</div>
+                <div><strong>Date:</strong> {displayDate(draft.reservation_date)}</div>
+                <div><strong>Arrival:</strong> {draft.start_time}</div>
+                <div><strong>Guests:</strong> {draft.guest_count} guests</div>
+                {draft.special_notes?.trim() && (
+                  <div style={{ marginTop: '8px', borderTop: '1px solid rgba(242, 231, 210, 0.1)', paddingTop: '8px' }}>
+                    <strong>Special Notes:</strong> <span style={{ color: 'var(--muted)' }}>{draft.special_notes}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="staff-modal-actions">
+              <button className="ghost-button" type="button" onClick={() => setConfirmOpen(false)}>
+                Cancel
+              </button>
+              <button className="gold-button primary" type="button" disabled={submitting} onClick={createReservation}>
+                {submitting ? 'Confirming...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
