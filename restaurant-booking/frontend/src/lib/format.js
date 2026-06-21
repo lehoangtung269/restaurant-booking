@@ -1,5 +1,5 @@
 export const money = (value) =>
-  new Intl.NumberFormat('vi-VN', {
+  new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'VND',
     maximumFractionDigits: 0,
@@ -14,11 +14,11 @@ export const todayISO = () => {
 };
 
 export const displayDate = (value) => {
-  if (!value) return 'Chua chon ngay';
+  if (!value) return 'No date selected';
   const normalized = String(value).includes('T') ? String(value).slice(0, 10) : value;
   const date = new Date(`${normalized}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return 'Ngay khong hop le';
-  return new Intl.DateTimeFormat('vi-VN', {
+  if (Number.isNaN(date.getTime())) return 'Invalid date';
+  return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     day: '2-digit',
     month: '2-digit',

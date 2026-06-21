@@ -96,7 +96,7 @@ export default function App() {
 
         {/* ── 404 ── */}
         <Route element={<PublicLayout />}>
-          <Route path="*" element={<ComingSoonPage title="Page not found" text="Route này chưa tồn tại." />} />
+          <Route path="*" element={<ComingSoonPage title="Page not found" text="This route does not exist." />} />
         </Route>
       </Routes>
     </ErrorBoundary>

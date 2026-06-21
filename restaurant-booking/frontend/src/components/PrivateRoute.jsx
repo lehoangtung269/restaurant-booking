@@ -2,13 +2,13 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/authContextValue';
 
 /**
- * PrivateRoute — Bảo vệ route yêu cầu đăng nhập.
+ * PrivateRoute — Protects routes that require authentication.
  *
- * @param {string[]} [roles]  - Nếu có, chỉ cho phép user có role trong danh sách.
- * @param {string}   [redirectTo] - URL để redirect nếu không đủ quyền (mặc định: '/')
+ * @param {string[]} [roles]  - If provided, only allows users with a role in this list.
+ * @param {string}   [redirectTo] - URL to redirect to if insufficient permissions (default: '/')
  *
- * Nếu chưa đăng nhập:  redirect → /login?returnTo=<current-path>
- * Nếu sai role:        redirect → redirectTo (mặc định '/')
+ * If not logged in:  redirect → /login?returnTo=<current-path>
+ * If wrong role:     redirect → redirectTo (default '/')
  */
 export function PrivateRoute({ children, roles, redirectTo = '/' }) {
   const { isAuthenticated, user } = useAuth();
@@ -27,9 +27,9 @@ export function PrivateRoute({ children, roles, redirectTo = '/' }) {
 }
 
 /**
- * StaffRoute — Bảo vệ route chỉ dành cho STAFF + MANAGER.
- * Nếu chưa đăng nhập → redirect /staff/login
- * Nếu không phải STAFF/MANAGER → redirect /
+ * StaffRoute — Protects routes for STAFF + MANAGER only.
+ * If not logged in → redirect /staff/login
+ * If not STAFF/MANAGER → redirect /
  */
 export function StaffRoute({ children }) {
   const { isAuthenticated, user } = useAuth();

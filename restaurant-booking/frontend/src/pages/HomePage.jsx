@@ -1,9 +1,45 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { money } from '../lib/format';
 import { fallbackMenuItems, fallbackReviews, heroImages } from '../data/fallbackData';
 import { useSEO } from '../lib/useSEO';
+
+const tastingPaths = [
+  {
+    title: 'Garden opening',
+    description:
+      'The evening begins with raw, clean flavours — young herbs picked that morning, chilled broths, citrus snow and micro greens that awaken the palate before the fire courses arrive.',
+    image:
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=600&q=80',
+    menuFilter: 'tasting',
+  },
+  {
+    title: 'Fire and smoke',
+    description:
+      'The second chapter moves to the open flame — aged beef, ember-cooked duck and smoked marrow sauce. Every plate carries the warmth and depth of our fire room.',
+    image:
+      'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
+    menuFilter: 'fire',
+  },
+  {
+    title: 'Cellar sauces',
+    description:
+      'Slow reductions, aged vinegars, fermented pastes — our cellar holds the concentrated essence of every season. These sauces tie the fire courses to the garden courses.',
+    image:
+      'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=600&q=80',
+    menuFilter: 'tasting',
+  },
+  {
+    title: 'Sweet herbs',
+    description:
+      'The final path is gentle: poached fruit, toasted hay, malt cream, edible flowers. Desserts that feel like an extension of the garden rather than an indulgence.',
+    image:
+      'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=600&q=80',
+    menuFilter: 'dessert',
+  },
+];
 
 function usePreviewData() {
   const menuQuery = useQuery({
@@ -25,6 +61,7 @@ function usePreviewData() {
 
 export function HomePage() {
   const { menu, reviews } = usePreviewData();
+  const [activePath, setActivePath] = useState(null);
   useSEO({
     title: 'Fine Dining Restaurant',
     description: 'Maison Edem — A botanical dining room shaped by fire, herbs, fermentation and seasonal produce. Reserve your table online.',
@@ -145,12 +182,38 @@ export function HomePage() {
           <h2>Four paths through the evening.</h2>
         </div>
         <div className="menu-lines">
-          {['Garden opening', 'Fire and smoke', 'Cellar sauces', 'Sweet herbs'].map((line, index) => (
-            <div className="menu-line" key={line}>
-              <span>{line}</span>
-              <small>{String(index + 1).padStart(2, '0')}</small>
-            </div>
-          ))}
+          {tastingPaths.map((path, index) => {
+            const isOpen = activePath === index;
+            return (
+              <div className={`menu-line-wrap ${isOpen ? 'menu-line-wrap--open' : ''}`} key={path.title}>
+                <button
+                  className="menu-line menu-line--interactive"
+                  type="button"
+                  onClick={() => setActivePath(isOpen ? null : index)}
+                  aria-expanded={isOpen}
+                >
+                  <span>{path.title}</span>
+                  <div className="menu-line-right">
+                    <small>{String(index + 1).padStart(2, '0')}</small>
+                    <span className={`menu-line-icon ${isOpen ? 'menu-line-icon--open' : ''}`}>+</span>
+                  </div>
+                </button>
+                <div className={`menu-line-panel ${isOpen ? 'menu-line-panel--open' : ''}`}>
+                  <div className="menu-line-panel-inner">
+                    <div className="menu-line-panel-image">
+                      <img src={path.image} alt={path.title} />
+                    </div>
+                    <div className="menu-line-panel-content">
+                      <p>{path.description}</p>
+                      <Link className="gold-button" to={`/menu`}>
+                        View on menu →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 

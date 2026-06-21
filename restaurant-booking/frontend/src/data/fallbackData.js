@@ -79,13 +79,13 @@ export const fallbackReviews = [
   {
     id: 1,
     rating: 5,
-    comment: 'Khong gian dep, mon an tinh te va phuc vu rat dung nhip.',
+    comment: 'Beautiful atmosphere, exquisite dishes and perfectly paced service.',
     customer_name: 'Nguyen Minh Anh',
   },
   {
     id: 2,
     rating: 5,
-    comment: 'Bua toi ky niem rat tron ven, dac biet la ban gan cua so.',
+    comment: 'A wonderful anniversary dinner, especially the table by the window.',
     customer_name: 'Le Hoang Nam',
   },
 ];
