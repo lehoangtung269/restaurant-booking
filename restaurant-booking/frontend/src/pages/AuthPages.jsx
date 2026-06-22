@@ -107,6 +107,9 @@ export function StaffLoginPage() {
   const [message, setMessage] = useState('');
   const { login, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = getSafeReturnTo(searchParams);
+  const staffReturnTo = returnTo.startsWith('/staff') ? returnTo : '/staff';
 
   const submit = async (event) => {
     event.preventDefault();
@@ -118,7 +121,7 @@ export function StaffLoginPage() {
         setMessage('This portal is only for staff and manager accounts.');
         return;
       }
-      navigate('/staff');
+      navigate(staffReturnTo);
     } catch (err) {
       setMessage(err.message);
     }

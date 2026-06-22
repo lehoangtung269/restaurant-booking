@@ -11,8 +11,10 @@ import { useAuth } from '../contexts/authContextValue';
  * If wrong role:     redirect → redirectTo (default '/')
  */
 export function PrivateRoute({ children, roles, redirectTo = '/' }) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isAuthLoading, user } = useAuth();
   const location = useLocation();
+
+  if (isAuthLoading) return null;
 
   if (!isAuthenticated) {
     const returnTo = encodeURIComponent(location.pathname + location.search);
@@ -32,8 +34,10 @@ export function PrivateRoute({ children, roles, redirectTo = '/' }) {
  * If not STAFF/MANAGER → redirect /
  */
 export function StaffRoute({ children }) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isAuthLoading, user } = useAuth();
   const location = useLocation();
+
+  if (isAuthLoading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to={`/staff/login?returnTo=${encodeURIComponent(location.pathname)}`} replace />;
