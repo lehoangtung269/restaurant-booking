@@ -48,7 +48,8 @@ beforeAll(async () => {
 
     // Lấy 1 bàn AVAILABLE
     const tables = await request(app).get('/api/tables');
-    const available = tables.body.find(t => t.status === 'AVAILABLE');
+    const available = tables.body.find(t => t.table_number === 'TST01' && t.status === 'AVAILABLE')
+        || tables.body.find(t => t.status === 'AVAILABLE');
     if (available) tableId = available.id;
 });
 

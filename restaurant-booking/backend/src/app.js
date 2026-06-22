@@ -8,16 +8,22 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 
 // Rate limiting
+const isTest = process.env.NODE_ENV === 'test';
+const isProduction = process.env.NODE_ENV === 'production';
+
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 phút
-    max: 100,
+    max: Number(process.env.RATE_LIMIT_MAX) || (isProduction ? 100 : 1000),
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: 'Too many requests, please try again later.' },
 });
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 20, // nghiêm hơn cho auth endpoints
+    max: Number(process.env.AUTH_RATE_LIMIT_MAX) || (isProduction ? 20 : 100),
+    skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
     message: { message: 'Too many auth attempts, please try again later.' },
 });
 
@@ -26,13 +32,16 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
-if (process.env.NODE_ENV !== 'test') {
+if (!isTest) {
     app.use(globalLimiter);
 }
 
 // Routes sau
 const authRoutes = require('./routes/auth.routes');
-app.use('/api/auth', process.env.NODE_ENV === 'test' ? authRoutes : [authLimiter, authRoutes]);
+if (!isTest) {
+    app.use(['/api/auth/login', '/api/auth/register'], authLimiter);
+}
+app.use('/api/auth', authRoutes);
 const tableRoutes = require('./routes/table.routes');
 app.use('/api/tables', tableRoutes);
 const menuRoutes = require('./routes/menu.routes');
