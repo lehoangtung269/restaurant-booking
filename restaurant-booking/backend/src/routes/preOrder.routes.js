@@ -5,6 +5,8 @@ const { createOrUpdate, getByReservation, cancel } = require('../controllers/pre
 const { validateCreatePreOrder } = require('../middlewares/validate');
 
 router.post('/', verifyToken, validateCreatePreOrder, createOrUpdate);
+router.get('/reservation/:reservation_id', verifyToken, getByReservation);
+router.patch('/reservation/:reservation_id/cancel', verifyToken, cancel);
 router.get('/:reservation_id', verifyToken, getByReservation);
 router.patch('/:reservation_id/cancel', verifyToken, cancel);
 

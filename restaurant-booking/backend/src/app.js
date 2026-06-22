@@ -26,11 +26,13 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(globalLimiter);
+if (process.env.NODE_ENV !== 'test') {
+    app.use(globalLimiter);
+}
 
 // Routes sau
 const authRoutes = require('./routes/auth.routes');
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth', process.env.NODE_ENV === 'test' ? authRoutes : [authLimiter, authRoutes]);
 const tableRoutes = require('./routes/table.routes');
 app.use('/api/tables', tableRoutes);
 const menuRoutes = require('./routes/menu.routes');

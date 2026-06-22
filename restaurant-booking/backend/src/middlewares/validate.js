@@ -61,7 +61,9 @@ const validateCreateCategory = [
 const validateCreateItem = [
     body('category_id').isInt({ min: 1 }).withMessage('category_id must be a positive integer'),
     body('name').trim().notEmpty().withMessage('name is required'),
-    body('price').isDecimal({ decimal_digits: '0,2', force_decimal: false }).withMessage('price must be a valid number'),
+    body('price')
+        .isDecimal({ decimal_digits: '0,2', force_decimal: false }).withMessage('price must be a valid number')
+        .custom(value => Number(value) > 0).withMessage('price must be greater than 0'),
     body('image_url').optional().isURL().withMessage('image_url must be a valid URL'),
     body('is_available').optional().isBoolean().withMessage('is_available must be boolean'),
     handleValidation,
@@ -174,4 +176,3 @@ module.exports = {
     // Pre-order
     validateCreatePreOrder,
 };
-

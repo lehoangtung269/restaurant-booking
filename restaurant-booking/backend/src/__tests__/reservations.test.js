@@ -326,7 +326,7 @@ describe('PATCH /api/reservations/:id/cancel', () => {
         const res = await request(app)
             .patch(`/api/reservations/${newReservationId}/cancel`)
             .set('Authorization', `Bearer ${customer2Token}`);
-        expect(res.status).toBe(400); // Already CANCELLED (previous test) or 403
+        expect([400, 403]).toContain(res.status); // Already CANCELLED (previous test) or forbidden
     });
 });
 

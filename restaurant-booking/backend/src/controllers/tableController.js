@@ -38,7 +38,7 @@ const update = async (req, res) => {
         if (!table) return res.status(404).json({ message: 'Table not found' });
 
         // Allowlist of updatable fields to prevent mass assignment
-        const allowedFields = ['table_number', 'capacity', 'location', 'status'];
+        const allowedFields = ['table_number', 'capacity', 'area', 'status'];
         const updateData = {};
 
         for (const field of allowedFields) {
