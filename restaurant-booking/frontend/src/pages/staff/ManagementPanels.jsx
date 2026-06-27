@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { money } from '../../lib/format';
+import { useState } from 'react';
+import { Pencil, Plus, Send, Star, Trash2 } from 'lucide-react';
+import { displayDate, money } from '../../lib/format';
 import { CustomSelect } from '../../components/CustomSelect';
 
 const TABLE_AREA_OPTIONS = [
@@ -329,6 +330,87 @@ export function AccountsManagement({ users, userForm, setUserForm, currentUserId
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Reviews management ───────────────────────────────────────────────────────
+export function ReviewsManagement({ reviews, managerLoading, onRefresh, onReply }) {
+  const [replyDrafts, setReplyDrafts] = useState({});
+
+  const updateDraft = (reviewId, value) => {
+    setReplyDrafts((cur) => ({ ...cur, [reviewId]: value }));
+  };
+
+  const submitReply = async (event, review) => {
+    event.preventDefault();
+    const draft = replyDrafts[review.id] ?? review.manager_reply ?? '';
+    await onReply(review, draft);
+    setReplyDrafts((cur) => ({ ...cur, [review.id]: draft }));
+  };
+
+  return (
+    <section className="staff-management-shell">
+      <div className="staff-management-head">
+        <div>
+          <p className="staff-eyebrow">Guest reviews</p>
+          <h1>Đánh giá khách hàng</h1>
+        </div>
+        <button className="staff-main-action compact" type="button" onClick={onRefresh} disabled={managerLoading}>
+          {managerLoading ? 'Đang tải...' : 'Làm mới'}
+        </button>
+      </div>
+
+      <div className="staff-panel">
+        {reviews.length ? (
+          <div className="staff-review-list">
+            {reviews.map((review) => (
+              <article className="staff-review-card" key={review.id}>
+                <div className="staff-review-main">
+                  <div>
+                    <strong>{review.customer_name || 'Maison guest'}</strong>
+                    <span>
+                      Reservation #{review.reservation_id}
+                      {review.reservation_date ? ` / ${displayDate(review.reservation_date)}` : ''}
+                    </span>
+                  </div>
+                  <div className="staff-review-stars" aria-label={`${review.rating} sao`}>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <Star
+                        key={index}
+                        size={15}
+                        fill={index < Number(review.rating) ? 'currentColor' : 'none'}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <p>{review.comment || 'Khách không để lại bình luận.'}</p>
+
+                <form className="staff-review-reply" onSubmit={(event) => submitReply(event, review)}>
+                  <label>
+                    Phản hồi của quản lý
+                    <textarea
+                      value={replyDrafts[review.id] ?? review.manager_reply ?? ''}
+                      onChange={(event) => updateDraft(review.id, event.target.value)}
+                      placeholder="Viết lời cảm ơn hoặc phản hồi tới khách..."
+                    />
+                  </label>
+                  <button className="staff-main-action compact" type="submit">
+                    <Send size={14} />
+                    {review.manager_reply ? 'Cập nhật phản hồi' : 'Gửi phản hồi'}
+                  </button>
+                </form>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="staff-empty">
+            <strong>Chưa có đánh giá.</strong>
+            <p>Các đánh giá từ khách sau khi hoàn tất đặt bàn sẽ xuất hiện tại đây.</p>
+          </div>
+        )}
       </div>
     </section>
   );

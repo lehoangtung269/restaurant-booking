@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BarChart3, CalendarDays, ChefHat, LayoutDashboard, LogOut, Search, Table2, UsersRound } from 'lucide-react';
+import { BarChart3, CalendarDays, ChefHat, LayoutDashboard, LogOut, MessageSquareText, Search, Table2, UsersRound } from 'lucide-react';
 import { useAuth } from '../contexts/authContextValue';
 import { useToast } from '../contexts/ToastContext';
 import { api, getErrorMessage } from '../lib/api';
@@ -17,6 +17,7 @@ import {
   TablesManagement,
   MenuManagement,
   AccountsManagement,
+  ReviewsManagement,
   emptyTableForm,
   emptyMenuForm,
   emptyUserForm,
@@ -28,6 +29,7 @@ const STAFF_MODULES = [
   { key: 'reservations', label: 'Reservations', icon: CalendarDays },
   { key: 'tables', label: 'Tables', icon: Table2 },
   { key: 'menu', label: 'Menu', icon: ChefHat, managerOnly: true },
+  { key: 'reviews', label: 'Reviews', icon: MessageSquareText, managerOnly: true },
   { key: 'accounts', label: 'Staff', icon: UsersRound, managerOnly: true },
   { key: 'reports', label: 'Reports', icon: BarChart3, managerOnly: true },
 ];
@@ -81,6 +83,7 @@ export function StaffPage() {
   const [categories, setCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [users, setUsers] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [managerLoading, setManagerLoading] = useState(false);
   const [dashboard, setDashboard] = useState({ overview: null, revenue: null, occupancy: null, topItems: [] });
 
@@ -89,7 +92,7 @@ export function StaffPage() {
   const [userForm, setUserForm] = useState(emptyUserForm);
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const currentModule = !canManage && ['overview', 'menu', 'accounts', 'reports'].includes(activeModule)
+  const currentModule = !canManage && ['overview', 'menu', 'reviews', 'accounts', 'reports'].includes(activeModule)
     ? 'reservations'
     : activeModule;
 
@@ -162,11 +165,12 @@ export function StaffPage() {
     const year = new Date().getFullYear();
     const month = String(new Date().getMonth() + 1).padStart(2, '0');
     try {
-      const [catRes, itemRes, userRes, overviewRes, revenueRes, occupancyRes, topRes] =
+    const [catRes, itemRes, userRes, reviewRes, overviewRes, revenueRes, occupancyRes, topRes] =
         await Promise.all([
           api.get('/api/menu/categories'),
           api.get('/api/menu/items'),
           api.get('/api/users'),
+          api.get('/api/reviews', { params: { limit: 100 } }),
           api.get('/api/dashboard/overview', { params: { from: today, to: today } }),
           api.get('/api/dashboard/revenue', { params: { year, month } }),
           api.get('/api/dashboard/occupancy', { params: { from: today, to: today } }),
@@ -175,6 +179,7 @@ export function StaffPage() {
       setCategories(catRes.data);
       setMenuItems(itemRes.data);
       setUsers(userRes.data);
+      setReviews(reviewRes.data);
       setDashboard({
         overview: overviewRes.data,
         revenue: revenueRes.data,
@@ -370,6 +375,23 @@ export function StaffPage() {
     }
   };
 
+  const replyToReview = async (review, replyText) => {
+    if (!canManage || !replyText.trim()) return;
+    try {
+      const { data } = await api.patch(`/api/reviews/${review.id}/reply`, { manager_reply: replyText.trim() });
+      setReviews((cur) =>
+        cur.map((item) =>
+          item.id === review.id
+            ? { ...item, manager_reply: data.manager_reply }
+            : item,
+        ),
+      );
+      toast.success('Đã gửi phản hồi đánh giá');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+
   const exportReportCsv = () => {
     const rows = [
       ['metric', 'value'],
@@ -540,6 +562,16 @@ export function StaffPage() {
           setMenuForm={setMenuForm}
           onSave={saveMenuItem}
           onDelete={deleteMenuItem}
+        />
+      )}
+
+      {/* ── Reviews management ── */}
+      {currentModule === 'reviews' && canManage && (
+        <ReviewsManagement
+          reviews={reviews}
+          managerLoading={managerLoading}
+          onRefresh={loadManagerData}
+          onReply={replyToReview}
         />
       )}
 
