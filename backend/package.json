@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/seedDb.js",
+    "seed": "node db/seeds/seed_maison_edem.js",
+    "db:migrate": "knex --knexfile knexfile.js migrate:latest",
+    "db:rollback": "knex --knexfile knexfile.js migrate:rollback",
     "test": "jest",
     "test:verbose": "jest --verbose",
     "test:coverage": "jest --coverage"

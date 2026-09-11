@@ -1,10 +1,10 @@
+const { getSslConfig } = require('./dbSsl');
+
 const knex = require('knex')({
     client: 'postgresql',
     connection: {
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production'
-            ? { rejectUnauthorized: true }
-            : { rejectUnauthorized: false }
+        ssl: getSslConfig()
     },
     pool: { min: 2, max: 10 }
 });
