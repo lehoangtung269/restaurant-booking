@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: restaurant_booking
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Chua dat DB_PASSWORD trong file .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d restaurant_booking"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgres://app:${DB_PASSWORD}@db:5432/restaurant_booking
+      PGSSLMODE: disable
+      JWT_SECRET: ${JWT_SECRET:?Chua dat JWT_SECRET trong file .env}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Chua dat JWT_REFRESH_SECRET trong file .env}
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      SERVE_STATIC: "true"
+      DISABLE_EMAIL: "true"
+
+volumes:
+  pgdata:

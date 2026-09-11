@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
@@ -63,6 +64,18 @@ app.use('/api/users', userRoutes);
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running' });
 });
+
+// Serve frontend build trên cùng 1 link (deploy Oracle single-VM).
+// Bật bằng SERVE_STATIC=true, thư mục backend/public chứa file build.
+// Đặt sau API, trước 404: request /api/* lạ vẫn 404 JSON, còn lại trả index.html.
+if (process.env.SERVE_STATIC === 'true') {
+    const publicDir = path.join(__dirname, '..', 'public');
+    app.use(express.static(publicDir));
+    app.use((req, res, next) => {
+        if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
+        res.sendFile(path.join(publicDir, 'index.html'));
+    });
+}
 
 // 404 handler - must be after all routes
 app.use((req, res) => {
